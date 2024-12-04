@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference
+  template:
+    metadata:
+      labels:
+        app: inference
+    spec:
+      containers:
+      - name: inference
+        image: your-docker-image
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://user:password@db-service/dbname"
+        - name: RMQ_HOST
+          value: "rabbitmq-service"
+        - name: RMQ_PORT
+          value: "5672"

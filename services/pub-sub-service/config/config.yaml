@@ -1,0 +1,3 @@
+rabbitmq:
+  host: "localhost"
+  queue: "task_queue"

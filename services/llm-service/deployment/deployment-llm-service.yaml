@@ -14,10 +14,10 @@ spec:
     spec:
       containers:
       - name: inference
-        image: your-docker-image
+        image: ad060398/llm-service  # Updated with your Docker image
         env:
         - name: DATABASE_URL
-          value: "postgresql://user:password@db-service/dbname"
+          value: "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"  # Updated credentials and database
         - name: RMQ_HOST
           value: "rabbitmq-service"
         - name: RMQ_PORT

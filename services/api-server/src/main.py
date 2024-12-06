@@ -4,6 +4,7 @@ import pika
 import json
 import uuid
 from sqlalchemy import create_engine, Table, MetaData, select
+import time
 
 # Database configuration
 DATABASE_URL = "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"
@@ -23,10 +24,39 @@ QUEUE_NAME = "task_queue"
 # FastAPI application
 app = FastAPI()
 
-# RabbitMQ connection setup
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=RMQ_HOST, port=RMQ_PORT))
-channel = connection.channel()
-channel.queue_declare(queue=QUEUE_NAME)
+# RabbitMQ connection and channel
+def connect_to_rabbitmq():
+    """Establish a RabbitMQ connection and channel."""
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RMQ_HOST, port=RMQ_PORT))
+        channel = connection.channel()
+        channel.queue_declare(queue=QUEUE_NAME)
+        return connection, channel
+    except Exception as e:
+        print(f"Error connecting to RabbitMQ: {str(e)}")
+        raise
+
+# Initialize RabbitMQ connection and channel
+connection, channel = connect_to_rabbitmq()
+
+def ensure_channel():
+    """Ensure RabbitMQ channel is open, retry if closed."""
+    global connection, channel
+    retries = 5  # Number of retries
+    delay = 2  # Delay in seconds between retries
+
+    for attempt in range(retries):
+        try:
+            if connection.is_closed or channel.is_closed:
+                print(f"Retrying RabbitMQ connection... Attempt {attempt + 1}/{retries}")
+                connection, channel = connect_to_rabbitmq()
+            return channel
+        except Exception as e:
+            print(f"Failed to reconnect to RabbitMQ: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise HTTPException(status_code=500, detail="Could not reconnect to RabbitMQ after multiple attempts.")
 
 # Define request and response models
 class ChatRequest(BaseModel):
@@ -46,6 +76,9 @@ async def chat(request: ChatRequest):
     try:
         job_id = str(uuid.uuid4())
         task = {"job_id": job_id, "prompt": request.text}
+
+        # Ensure RabbitMQ channel is open
+        channel = ensure_channel()
 
         # Send task to RabbitMQ
         channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=json.dumps(task))
@@ -72,4 +105,3 @@ async def status(job_id: str):
             return {"job_id": job_id, "status": "processing"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error querying the database: {str(e)}")
-

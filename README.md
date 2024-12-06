@@ -21,4 +21,17 @@ An efficient LLM inference service
    4. kubectl apply -f deployment/deployment-llm-service.yaml
    5. kubectl apply -f deployment/service-llm-service.yaml
 9. Build api-server
-   1.  
+   1. cd api-server
+   2. docker build . -t ad060398/api-server --no-cache --platform=linux/amd64
+   3. docker push ad060398/api-server
+   4. kubectl apply -f deployment/deployment-api-server.yaml
+   5. kubectl apply -f deployment/service-api-server.yaml
+
+10. Above steps should run all the services. list pods using kubectl get pods and look at logs using kubectl logs <pod_name>
+11. List services using kubectl get svc and it will show external ip of api-server service. Use it to send request as below
+        1. curl -X POST http://<external-ip>/chat \
+				-H "Content-Type: application/json" \
+				-d '{"text": "Hello, LLM!"}'
+		2. curl http://<external-ip>/status/<job_id>
+
+

@@ -17,11 +17,11 @@ spec:
         image: postgres:latest
         env:
         - name: POSTGRES_USER
-          value: "user"
+          value: "cml-user"
         - name: POSTGRES_PASSWORD
-          value: "password"
+          value: "cml-is-cool"
         - name: POSTGRES_DB
-          value: "dbname"
+          value: "result-db"
         ports:
         - containerPort: 5432
 ---

@@ -6,7 +6,7 @@ spec:
   selector:
     app: api-server
   ports:
-  - name: http
-    port: 80
-    targetPort: 8000
-  type: LoadBalancer  # Expose to an external IP
+    - protocol: TCP
+      port: 80  # External port exposed to the world
+      targetPort: 8000  # Port the container listens on
+  type: LoadBalancer

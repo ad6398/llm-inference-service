@@ -6,7 +6,7 @@ import uuid
 from sqlalchemy import create_engine, Table, MetaData, select
 
 # Database configuration
-DATABASE_URL = "postgresql://user:password@db-service/dbname"
+DATABASE_URL = "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
 jobs_table = Table(
@@ -28,6 +28,7 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(host=RMQ_HOST, po
 channel = connection.channel()
 channel.queue_declare(queue=QUEUE_NAME)
 
+# Define request and response models
 class ChatRequest(BaseModel):
     text: str
 
@@ -36,21 +37,22 @@ class StatusResponse(BaseModel):
     status: str
     result: str = None
 
-
 @app.post("/chat")
 async def chat(request: ChatRequest):
     """
     Accepts a prompt from the user, creates a job_id, queues it in RabbitMQ,
     and returns the job_id.
     """
-    job_id = str(uuid.uuid4())
-    task = {"job_id": job_id, "prompt": request.text}
+    try:
+        job_id = str(uuid.uuid4())
+        task = {"job_id": job_id, "prompt": request.text}
 
-    # Send task to RabbitMQ
-    channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=json.dumps(task))
+        # Send task to RabbitMQ
+        channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=json.dumps(task))
 
-    return {"job_id": job_id}
-
+        return {"job_id": job_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error sending task to RabbitMQ: {str(e)}")
 
 @app.get("/status/{job_id}", response_model=StatusResponse)
 async def status(job_id: str):
@@ -59,12 +61,15 @@ async def status(job_id: str):
     If the job result is found, it returns the result.
     Otherwise, it indicates that the job is still processing.
     """
-    with engine.connect() as conn:
-        query = select(jobs_table).where(jobs_table.c.job_id == job_id)
-        result = conn.execute(query).fetchone()
+    try:
+        with engine.connect() as conn:
+            query = select(jobs_table).where(jobs_table.c.job_id == job_id)
+            result = conn.execute(query).fetchone()
 
-    if result:
-        return {"job_id": job_id, "status": "completed", "result": result["result"]}
-    else:
-        return {"job_id": job_id, "status": "processing"}
+        if result:
+            return {"job_id": job_id, "status": "completed", "result": result["result"]}
+        else:
+            return {"job_id": job_id, "status": "processing"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error querying the database: {str(e)}")
 

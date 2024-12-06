@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference
+  template:
+    metadata:
+      labels:
+        app: inference
+    spec:
+      containers:
+      - name: inference
+        image: ad060398/llm-service  # Updated with your Docker image
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"  # Updated credentials and database
+        - name: RMQ_HOST
+          value: "rabbitmq-service"
+        - name: RMQ_PORT
+          value: "5672"

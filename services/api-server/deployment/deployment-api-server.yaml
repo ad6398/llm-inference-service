@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-server
+  template:
+    metadata:
+      labels:
+        app: api-server
+    spec:
+      containers:
+      - name: api-server
+        image: ad060398/api-server  # Replace with your Docker image for the API server
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"
+        - name: RMQ_HOST
+          value: "rabbitmq-service"
+        - name: RMQ_PORT
+          value: "5672"
+        ports:
+        - containerPort: 8000  # Default FastAPI port

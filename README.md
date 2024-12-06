@@ -18,7 +18,7 @@ An efficient LLM inference service
    1. cd llm-service
    2. docker build . -t ad060398/llm-service --no-cache --platform=linux/amd64
    3. docker push ad060398/llm-service
-   4.  kubectl apply -f deployment/deployment-llm-service.yaml
-   5.  kubectl apply -f deployment/service-llm-service.yaml
+   4. kubectl apply -f deployment/deployment-llm-service.yaml
+   5. kubectl apply -f deployment/service-llm-service.yaml
 9. Build api-server
    1.  

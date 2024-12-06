@@ -28,10 +28,29 @@ RMQ_HOST = "rabbitmq-service"
 RMQ_PORT = 5672
 QUEUE_NAME = "task_queue"
 
+def connect_to_rabbitmq():
+    """Establish a RabbitMQ connection and channel."""
+    try:
+        connection_params = pika.ConnectionParameters(
+            host=RMQ_HOST,
+            port=RMQ_PORT,
+            heartbeat=30,  # Send heartbeats every 30 seconds
+            blocked_connection_timeout=300  # Timeout for blocked connections
+        )
+        connection = pika.BlockingConnection(connection_params)
+        channel = connection.channel()
+        channel.queue_declare(queue=QUEUE_NAME, durable=True)
+        return connection, channel
+    except Exception as e:
+        print(f"Error connecting to RabbitMQ: {str(e)}")
+        raise
+
 # Establish RabbitMQ connection
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=RMQ_HOST, port=RMQ_PORT))
-channel = connection.channel()
-channel.queue_declare(queue=QUEUE_NAME)
+# connection = pika.BlockingConnection(pika.ConnectionParameters(host=RMQ_HOST, port=RMQ_PORT))
+# channel = connection.channel()
+# channel.queue_declare(queue=QUEUE_NAME)
+
+connection, channel = connect_to_rabbitmq()
 
 def process_task(ch, method, properties, body):
     """

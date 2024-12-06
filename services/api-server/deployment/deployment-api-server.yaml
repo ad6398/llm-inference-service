@@ -14,26 +14,13 @@ spec:
     spec:
       containers:
       - name: api-server
-        image: your-docker-image  # Replace with your Docker image for the API server
+        image: ad060398/api-server  # Replace with your Docker image for the API server
         env:
         - name: DATABASE_URL
-          value: "postgresql://user:password@db-service/dbname"
+          value: "postgresql://cml-user:cml-is-cool@db-service:5432/result-db"
         - name: RMQ_HOST
           value: "rabbitmq-service"
         - name: RMQ_PORT
           value: "5672"
         ports:
         - containerPort: 8000  # Default FastAPI port
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-server-service
-spec:
-  selector:
-    app: api-server
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8000
-  type: LoadBalancer  # Expose to an external IP

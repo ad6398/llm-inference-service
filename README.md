@@ -1,4 +1,4 @@
-# Distributed LLM inference service
+# Distributed LLM Inference Service
 
 ## Introduction
 The project aims to design and deploy a scalable, efficient cloud-based inference service for large language models (LLMs) using Kubernetes on Google Cloud. Leveraging vLLM, an open-source library for optimizing LLMs, the service addresses challenges in memory consumption and latency.

@@ -100,6 +100,10 @@ http://localhost:8089
 ```
 Configure and start the test from the web interface.
 
+### Benchmark Results
+
+<img width="626" alt="Screenshot 2025-01-30 at 12 16 40 PM" src="https://github.com/user-attachments/assets/95c7bc98-3035-4f31-8412-e30854104f54" />
+
 ---
 
 ## Conclusion
